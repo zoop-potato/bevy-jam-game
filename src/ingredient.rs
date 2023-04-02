@@ -1,10 +1,12 @@
+use super::*;
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 
 pub struct IngredientPlugin;
 
 impl Plugin for IngredientPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(load_ingredient_textures);
+        app.add_collection_to_loading_state::<_, IngredientTextures>(GameState::Loading);
     }
 }
 
@@ -20,35 +22,29 @@ pub enum Ingredient {
     BirtchBark,
 }
 
-#[derive(Resource)]
+#[derive(AssetCollection, Resource)]
 pub struct IngredientTextures {
+    #[asset(path = "mushroom.png")]
     mushroom: Handle<Image>,
+    #[asset(path = "deerpiss.png")]
     deerpiss: Handle<Image>,
+    #[asset(path = "toenails.png")]
     toenails: Handle<Image>,
+    #[asset(path = "rabbitpoo.png")]
     rabbitpoo: Handle<Image>,
+    #[asset(path = "fishhead.png")]
     fishhead: Handle<Image>,
+    #[asset(path = "froglegs.png")]
     frogleg: Handle<Image>,
+    #[asset(path = "corpseflower.png")]
     corpseflower: Handle<Image>,
+    #[asset(path = "birtchbark.png")]
     birtchbark: Handle<Image>,
 }
 
-fn load_ingredient_textures(mut commands: Commands, assets: Res<AssetServer>) {
-    let textures = IngredientTextures {
-        mushroom: assets.load("mushroom.png"),
-        deerpiss: assets.load("deerpiss.png"),
-        toenails: assets.load("toenails.png"),
-        rabbitpoo: assets.load("rabbitpoo.png"),
-        fishhead: assets.load("fishhead.png"),
-        frogleg: assets.load("frogleg.png"),
-        corpseflower: assets.load("corpseflower.png"),
-        birtchbark: assets.load("birtchbark.png"),
-    };
-    commands.insert_resource(textures);
-}
-
 pub fn spawn_ingredient(
-    mut commands: Commands,
-    textures: Res<IngredientTextures>,
+    commands: &mut Commands,
+    textures: &Res<IngredientTextures>,
     ingredient: Ingredient,
     transform: Transform,
 ) -> Entity {
