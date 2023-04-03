@@ -6,11 +6,12 @@ pub struct IngredientPlugin;
 
 impl Plugin for IngredientPlugin {
     fn build(&self, app: &mut App) {
-        app.add_collection_to_loading_state::<_, IngredientTextures>(GameState::Loading);
+        app.add_collection_to_loading_state::<_, IngredientTextures>(GameState::Loading)
+            .insert_resource(IngredientDragState::default());
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Debug, Copy, Clone)]
 pub enum Ingredient {
     Mushroom,
     DeerPiss,
@@ -40,6 +41,16 @@ pub struct IngredientTextures {
     corpseflower: Handle<Image>,
     #[asset(path = "birtchbark.png")]
     birtchbark: Handle<Image>,
+}
+
+#[derive(Resource, Default)]
+pub enum IngredientDragState {
+    Dragging {
+        ingredient: Entity,
+        position: Vec2,
+    },
+    #[default]
+    None,
 }
 
 pub fn spawn_ingredient(
