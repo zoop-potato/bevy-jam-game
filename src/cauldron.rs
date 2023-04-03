@@ -1,11 +1,13 @@
-use bevy::prelude::shape::Box;
-use bevy::prelude::*;
-
+use super::*;
+use crate::ingredient::{Gravity, Ingredient};
+use bevy::math::Rect;
+use bevy::{prelude::*, transform};
 pub struct CauldronPlugin;
 
 impl Plugin for CauldronPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup_cauldron);
+        app.add_startup_system(setup_cauldron)
+            .add_system(catch_ingredients.in_set(OnUpdate(GameState::Next)));
     }
 }
 
@@ -13,38 +15,48 @@ impl Plugin for CauldronPlugin {
 pub struct Cauldron {
     contains: Vec<Entity>,
     max_ingredients: usize,
-    bobbing_box: Box,
+    bobbing_box: Rect,
     entity: Entity,
 }
 
 fn setup_cauldron(mut commands: Commands, assets: Res<AssetServer>) {
+    let pos = Transform::from_xyz(-410.0, -130.0, 0.0).with_scale(Vec3 {
+        x: 2.0,
+        y: 2.0,
+        z: 0.0,
+    });
     let id = commands
         .spawn(SpriteBundle {
             texture: assets.load("ol_bethy_static.png"),
-            transform: Transform::from_xyz(-410.0, -130.0, 0.0).with_scale(Vec3 {
-                x: 2.0,
-                y: 2.0,
-                z: 0.0,
-            }),
+            transform: pos.clone(),
             ..default()
         })
         .id();
-
+    let pos = pos.translation.truncate();
     commands.insert_resource(Cauldron {
         contains: vec![],
         max_ingredients: 6,
-        bobbing_box: Box::from_corners(
-            Vec3 {
-                x: 0.0,
-                y: 0.0,
-                z: 0.0,
-            },
-            Vec3 {
-                x: 0.0,
-                y: 0.0,
-                z: 0.0,
-            },
+        bobbing_box: Rect::from_corners(
+            Vec2 { x: -100.0, y: 50.0 } + pos,
+            Vec2 { x: 100.0, y: -20.0 } + pos,
         ),
         entity: id,
     });
+}
+
+fn catch_ingredients(
+    mut commands: Commands,
+    mut cauldron: ResMut<Cauldron>,
+    ingredients: Query<(Entity, &Transform), (With<Ingredient>, With<Gravity>)>,
+) {
+    let cauldron = cauldron.as_mut();
+    for (entity, transform) in ingredients.iter() {
+        if cauldron
+            .bobbing_box
+            .contains(transform.translation.truncate())
+        {
+            cauldron.contains.push(entity);
+            commands.get_entity(entity).unwrap().remove::<Gravity>();
+        }
+    }
 }

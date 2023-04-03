@@ -108,7 +108,6 @@ fn check_clicks(
             entity: id,
             position: mouse,
         }
-        // TODO: Spawn new ingredient and add it to drag state
     }
 }
 
@@ -178,7 +177,7 @@ fn drag_item(
                 transform.translation.y = mouse.y;
             }
         }
-        IngredientDragState::None => {},
+        IngredientDragState::None => {}
     }
 }
 
