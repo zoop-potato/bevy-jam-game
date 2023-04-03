@@ -7,8 +7,14 @@ pub struct IngredientPlugin;
 impl Plugin for IngredientPlugin {
     fn build(&self, app: &mut App) {
         app.add_collection_to_loading_state::<_, IngredientTextures>(GameState::Loading)
-            .insert_resource(IngredientDragState::default());
+            .insert_resource(IngredientDragState::default())
+            .add_system(apply_gravity.in_set(OnUpdate(GameState::Next)));
     }
+}
+
+#[derive(Component, Default)]
+pub struct Gravity {
+    speed: f32,
 }
 
 #[derive(Component, Debug, Copy, Clone)]
@@ -43,10 +49,10 @@ pub struct IngredientTextures {
     birtchbark: Handle<Image>,
 }
 
-#[derive(Resource, Default)]
+#[derive(Resource, Default, PartialEq)]
 pub enum IngredientDragState {
     Dragging {
-        ingredient: Entity,
+        entity: Entity,
         position: Vec2,
     },
     #[default]
@@ -78,4 +84,11 @@ pub fn spawn_ingredient(
         })
         .insert(ingredient)
         .id()
+}
+
+fn apply_gravity(mut objects: Query<(&mut Gravity, &mut Transform)>) {
+    for (mut grav, mut transform) in objects.iter_mut() {
+        grav.speed -= 0.3;
+        transform.translation.y += grav.speed;
+    }
 }

@@ -1,5 +1,7 @@
 use super::*;
-use crate::ingredient::{spawn_ingredient, Ingredient, IngredientDragState, IngredientTextures};
+use crate::ingredient::{
+    spawn_ingredient, Gravity, Ingredient, IngredientDragState, IngredientTextures,
+};
 use bevy::{transform, window::PrimaryWindow};
 
 pub struct ShelfPlugin;
@@ -13,7 +15,8 @@ impl Plugin for ShelfPlugin {
                 (update_click_boxes, check_clicks)
                     .chain()
                     .in_set(OnUpdate(GameState::Next)),
-            );
+            )
+            .add_system(drop_ingredient.in_set(OnUpdate(GameState::Next)));
     }
 }
 
@@ -101,10 +104,31 @@ fn check_clicks(
             Transform::from_xyz(mouse.x, mouse.y, 0.1).with_scale(scale),
         );
         *drag_state.as_mut() = IngredientDragState::Dragging {
-            ingredient: id,
+            entity: id,
             position: mouse,
         }
         // TODO: Spawn new ingredient and add it to drag state
+    }
+}
+
+fn drop_ingredient(
+    mut commands: Commands,
+    ingredients: Query<&Ingredient>,
+    mouse_button: Res<Input<MouseButton>>,
+    mut drag_state: ResMut<IngredientDragState>,
+) {
+    let mut drag_state = drag_state.as_mut();
+    if mouse_button.just_released(MouseButton::Left) {
+        match drag_state {
+            IngredientDragState::Dragging { entity, position } => {
+                commands
+                    .get_entity(entity.clone())
+                    .unwrap()
+                    .insert(Gravity::default());
+                *drag_state = IngredientDragState::None;
+            }
+            IngredientDragState::None => {}
+        }
     }
 }
 
