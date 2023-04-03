@@ -16,7 +16,8 @@ impl Plugin for ShelfPlugin {
                     .chain()
                     .in_set(OnUpdate(GameState::Next)),
             )
-            .add_system(drop_ingredient.in_set(OnUpdate(GameState::Next)));
+            .add_system(drop_ingredient.in_set(OnUpdate(GameState::Next)))
+            .add_system(drag_item.in_set(OnUpdate(GameState::Next)));
     }
 }
 
@@ -154,6 +155,31 @@ fn setup_shelf(mut commands: Commands, assets: Res<AssetServer>) {
         })
         .id();
     commands.insert_resource(Shelf { entity: id })
+}
+
+fn drag_item(
+    drag_state: Res<IngredientDragState>,
+    mut transforms: Query<&mut Transform>,
+    window: Query<&Window, With<PrimaryWindow>>,
+    cameras: Query<(&Camera, &GlobalTransform)>,
+) {
+    match drag_state.into_inner() {
+        IngredientDragState::Dragging { entity, position } => {
+            let window = window.get_single().unwrap();
+            let (camera, camera_transform) = cameras.get_single().unwrap();
+            let mouse = screen_to_world(
+                Vec2::new(window.width(), window.height()),
+                window.cursor_position().unwrap_or(Vec2::new(0.0, 0.0)),
+                camera,
+                camera_transform,
+            );
+            if let Ok(mut transform) = transforms.get_component_mut::<Transform>(entity.clone()) {
+                transform.translation.x = mouse.x;
+                transform.translation.y = mouse.y;
+            }
+        }
+        IngredientDragState::None => {},
+    }
 }
 
 fn put_ingredients_on_shelf(
