@@ -20,7 +20,7 @@ pub struct Cauldron {
 }
 
 fn setup_cauldron(mut commands: Commands, assets: Res<AssetServer>) {
-    let pos = Transform::from_xyz(-410.0, -130.0, 0.0).with_scale(Vec3 {
+    let pos = Transform::from_xyz(-410.0, -130.0, 1.0).with_scale(Vec3 {
         x: 2.0,
         y: 2.0,
         z: 0.0,
