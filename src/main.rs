@@ -6,10 +6,12 @@ use bevy_asset_loader::prelude::*;
 use bevy_inspector_egui::quick::{ResourceInspectorPlugin, WorldInspectorPlugin};
 use cauldron::CauldronPlugin;
 use ingredient::IngredientPlugin;
+use potion::PotionPlugin;
 use shelf::ShelfPlugin;
 
 mod cauldron;
 mod ingredient;
+mod potion;
 mod shelf;
 
 fn main() {
@@ -19,10 +21,11 @@ fn main() {
         .add_state::<GameState>()
         .add_loading_state(LoadingState::new(GameState::Loading).continue_to_state(GameState::Next))
         // Plugins
-        .add_plugin(WorldInspectorPlugin::new())
+        //.add_plugin(WorldInspectorPlugin::new())
         .add_plugin(CauldronPlugin)
         .add_plugin(IngredientPlugin)
         .add_plugin(ShelfPlugin)
+        .add_plugin(PotionPlugin)
         .add_startup_system(setup_camera)
         .run();
 }

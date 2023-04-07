@@ -28,8 +28,8 @@ pub struct Shelf {
 
 #[derive(Component, Clone, Copy)]
 pub struct ClickBox {
-    topleft: Vec2,
-    bottomright: Vec2,
+    pub topleft: Vec2,
+    pub bottomright: Vec2,
 }
 
 pub struct ClickEvent(Entity);

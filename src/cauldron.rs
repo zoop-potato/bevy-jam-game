@@ -7,6 +7,7 @@ pub struct CauldronPlugin;
 impl Plugin for CauldronPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup_cauldron)
+            .add_event::<CatchEvent>()
             .add_system(catch_ingredients.in_set(OnUpdate(GameState::Next)));
     }
 }
@@ -35,7 +36,7 @@ fn setup_cauldron(mut commands: Commands, assets: Res<AssetServer>) {
     let pos = pos.translation.truncate();
     commands.insert_resource(Cauldron {
         contains: vec![],
-        max_ingredients: 6,
+        max_ingredients: 2,
         bobbing_box: Rect::from_corners(
             Vec2 { x: -100.0, y: 50.0 } + pos,
             Vec2 { x: 100.0, y: -20.0 } + pos,
@@ -44,10 +45,13 @@ fn setup_cauldron(mut commands: Commands, assets: Res<AssetServer>) {
     });
 }
 
+pub struct CatchEvent(pub Option<Entity>, pub Option<Entity>);
+
 fn catch_ingredients(
     mut commands: Commands,
     mut cauldron: ResMut<Cauldron>,
     ingredients: Query<(Entity, &Transform), (With<Ingredient>, With<Gravity>)>,
+    mut sender: EventWriter<CatchEvent>,
 ) {
     let cauldron = cauldron.as_mut();
     for (entity, transform) in ingredients.iter() {
@@ -57,6 +61,11 @@ fn catch_ingredients(
         {
             cauldron.contains.push(entity);
             commands.get_entity(entity).unwrap().remove::<Gravity>();
+            // Send CatchEvent
+            sender.send(CatchEvent(
+                cauldron.contains.get(0).copied(),
+                cauldron.contains.get(1).copied(),
+            ));
         }
     }
 }
