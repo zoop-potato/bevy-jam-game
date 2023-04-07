@@ -1,16 +1,17 @@
 use super::*;
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_asset_loader::prelude::*;
 use cauldron::{CatchEvent, Cauldron};
 use ingredient::*;
-use shelf::ClickBox;
+use shelf::{screen_to_world, ClickBox, ClickEvent};
 
 pub struct PotionPlugin;
 
 impl Plugin for PotionPlugin {
     fn build(&self, app: &mut App) {
         app.add_collection_to_loading_state::<_, PotionTexture>(GameState::Loading)
-            .add_system(craft_potion.in_set(OnUpdate(GameState::Next)));
+            .add_system(craft_potion.in_set(OnUpdate(GameState::Next)))
+            .add_system(check_potion_clicks.in_set(OnUpdate(GameState::Next)));
     }
 }
 
@@ -110,4 +111,30 @@ fn map_ingredients_to_effect(
         }
         _ => todo!(),
     };
+}
+
+fn check_potion_clicks(
+    mut commands: Commands,
+    mut click_reader: EventReader<ClickEvent>,
+    mut drag_state: ResMut<EntityDragState>,
+    potion: Query<(&PotionEffect, &GlobalTransform)>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    cameras: Query<(&Camera, &GlobalTransform)>,
+) {
+    let (camera, camera_transform) = cameras.get_single().unwrap();
+    let window = windows.get_single().unwrap();
+    for event in click_reader.iter() {
+        if potion.contains(event.0) {
+            let mouse = screen_to_world(
+                Vec2::new(window.width(), window.height()),
+                window.cursor_position().unwrap(),
+                camera,
+                camera_transform,
+            );
+            *drag_state.as_mut() = EntityDragState::Dragging {
+                entity: event.0,
+                position: mouse,
+            }
+        }
+    }
 }

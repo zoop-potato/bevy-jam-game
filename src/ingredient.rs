@@ -7,7 +7,7 @@ pub struct IngredientPlugin;
 impl Plugin for IngredientPlugin {
     fn build(&self, app: &mut App) {
         app.add_collection_to_loading_state::<_, IngredientTextures>(GameState::Loading)
-            .insert_resource(IngredientDragState::default())
+            .insert_resource(EntityDragState::default())
             .add_system(apply_gravity.in_set(OnUpdate(GameState::Next)));
     }
 }
@@ -50,7 +50,7 @@ pub struct IngredientTextures {
 }
 
 #[derive(Resource, Default, PartialEq)]
-pub enum IngredientDragState {
+pub enum EntityDragState {
     Dragging {
         entity: Entity,
         position: Vec2,

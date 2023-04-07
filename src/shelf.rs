@@ -1,6 +1,6 @@
 use super::*;
 use crate::ingredient::{
-    spawn_ingredient, Gravity, Ingredient, IngredientDragState, IngredientTextures,
+    spawn_ingredient, EntityDragState, Gravity, Ingredient, IngredientTextures,
 };
 use bevy::{transform, window::PrimaryWindow};
 
@@ -12,7 +12,7 @@ impl Plugin for ShelfPlugin {
             .add_event::<ClickEvent>()
             .add_system(put_ingredients_on_shelf.in_schedule(OnEnter(GameState::Next)))
             .add_systems(
-                (update_click_boxes, check_clicks)
+                (update_click_boxes, check_ingredient_clicks)
                     .chain()
                     .in_set(OnUpdate(GameState::Next)),
             )
@@ -32,7 +32,7 @@ pub struct ClickBox {
     pub bottomright: Vec2,
 }
 
-pub struct ClickEvent(Entity);
+pub struct ClickEvent(pub Entity);
 
 fn update_click_boxes(
     window: Query<&Window, With<PrimaryWindow>>,
@@ -72,10 +72,10 @@ fn update_click_boxes(
     }
 }
 
-fn check_clicks(
+fn check_ingredient_clicks(
     mut commands: Commands,
     mut click_reader: EventReader<ClickEvent>,
-    mut drag_state: ResMut<IngredientDragState>,
+    mut drag_state: ResMut<EntityDragState>,
     textures: Res<IngredientTextures>,
     ingredients: Query<(&Ingredient, &GlobalTransform)>,
     windows: Query<&Window, With<PrimaryWindow>>,
@@ -84,29 +84,31 @@ fn check_clicks(
     let (camera, camera_transform) = cameras.get_single().unwrap();
     let window = windows.get_single().unwrap();
     for event in click_reader.iter() {
-        let ingredient = ingredients
-            .get_component::<Ingredient>(event.0)
-            .unwrap_or(&Ingredient::Mushroom);
-        let scale = ingredients
-            .get_component::<GlobalTransform>(event.0)
-            .unwrap()
-            .compute_transform()
-            .scale;
-        let mouse = screen_to_world(
-            Vec2::new(window.width(), window.height()),
-            window.cursor_position().unwrap(),
-            camera,
-            camera_transform,
-        );
-        let id = spawn_ingredient(
-            &mut commands,
-            &textures,
-            *ingredient,
-            Transform::from_xyz(mouse.x, mouse.y, 0.1).with_scale(scale),
-        );
-        *drag_state.as_mut() = IngredientDragState::Dragging {
-            entity: id,
-            position: mouse,
+        if ingredients.contains(event.0) {
+            let ingredient = ingredients
+                .get_component::<Ingredient>(event.0)
+                .unwrap_or(&Ingredient::Mushroom);
+            let scale = ingredients
+                .get_component::<GlobalTransform>(event.0)
+                .unwrap()
+                .compute_transform()
+                .scale;
+            let mouse = screen_to_world(
+                Vec2::new(window.width(), window.height()),
+                window.cursor_position().unwrap(),
+                camera,
+                camera_transform,
+            );
+            let id = spawn_ingredient(
+                &mut commands,
+                &textures,
+                *ingredient,
+                Transform::from_xyz(mouse.x, mouse.y, 0.1).with_scale(scale),
+            );
+            *drag_state.as_mut() = EntityDragState::Dragging {
+                entity: id,
+                position: mouse,
+            }
         }
     }
 }
@@ -115,25 +117,25 @@ fn drop_ingredient(
     mut commands: Commands,
     ingredients: Query<&Ingredient>,
     mouse_button: Res<Input<MouseButton>>,
-    mut drag_state: ResMut<IngredientDragState>,
+    mut drag_state: ResMut<EntityDragState>,
 ) {
     let mut drag_state = drag_state.as_mut();
     if mouse_button.just_released(MouseButton::Left) {
         match drag_state {
-            IngredientDragState::Dragging { entity, position } => {
+            EntityDragState::Dragging { entity, position } => {
                 commands
                     .get_entity(entity.clone())
                     .unwrap()
                     .insert(Gravity::default());
-                *drag_state = IngredientDragState::None;
+                *drag_state = EntityDragState::None;
             }
-            IngredientDragState::None => {}
+            EntityDragState::None => {}
         }
     }
 }
 
 // Just copied this might need work
-fn screen_to_world(
+pub fn screen_to_world(
     window_size: Vec2,
     screen_pos: Vec2,
     camera: &Camera,
@@ -157,13 +159,13 @@ fn setup_shelf(mut commands: Commands, assets: Res<AssetServer>) {
 }
 
 fn drag_item(
-    drag_state: Res<IngredientDragState>,
+    drag_state: Res<EntityDragState>,
     mut transforms: Query<&mut Transform>,
     window: Query<&Window, With<PrimaryWindow>>,
     cameras: Query<(&Camera, &GlobalTransform)>,
 ) {
     match drag_state.into_inner() {
-        IngredientDragState::Dragging { entity, position } => {
+        EntityDragState::Dragging { entity, position } => {
             let window = window.get_single().unwrap();
             let (camera, camera_transform) = cameras.get_single().unwrap();
             let mouse = screen_to_world(
@@ -177,7 +179,7 @@ fn drag_item(
                 transform.translation.y = mouse.y;
             }
         }
-        IngredientDragState::None => {}
+        EntityDragState::None => {}
     }
 }
 
