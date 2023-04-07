@@ -21,7 +21,7 @@ fn main() {
         .add_state::<GameState>()
         .add_loading_state(LoadingState::new(GameState::Loading).continue_to_state(GameState::Next))
         // Plugins
-        //.add_plugin(WorldInspectorPlugin::new())
+        .add_plugin(WorldInspectorPlugin::new())
         .add_plugin(CauldronPlugin)
         .add_plugin(IngredientPlugin)
         .add_plugin(ShelfPlugin)

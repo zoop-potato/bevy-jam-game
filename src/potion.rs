@@ -75,7 +75,7 @@ fn spawn_potion(commands: &mut Commands, texture: &Res<PotionTexture>, effect: P
     commands
         .spawn(effect)
         .insert(SpriteBundle {
-            transform: Transform::from_xyz(0.0, 0.0, 0.1).with_scale(Vec3::splat(0.4)),
+            transform: Transform::from_xyz(-150.0, 235.0, 0.1).with_scale(Vec3::splat(0.4)),
             texture: texture.potion.clone(),
             ..default()
         })
@@ -92,6 +92,7 @@ fn map_ingredients_to_effect(
     use Ingredient::*;
     use PotionEffect::*;
     let first = first.unwrap_or(&Ingredient::CorpseFlower);
+    // only one ingredient
     if second.is_none() {
         return match first {
             BirtchBark => BuffDef,
@@ -131,6 +132,7 @@ fn check_potion_clicks(
                 camera,
                 camera_transform,
             );
+            commands.get_entity(event.0).unwrap().remove::<Gravity>();
             *drag_state.as_mut() = EntityDragState::Dragging {
                 entity: event.0,
                 position: mouse,
