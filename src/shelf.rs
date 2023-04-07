@@ -149,7 +149,7 @@ fn setup_shelf(mut commands: Commands, assets: Res<AssetServer>) {
     let id = commands
         .spawn(SpriteBundle {
             texture: assets.load("shelf.png"),
-            transform: Transform::from_xyz(-400.0, 230.0, 0.0).with_scale(Vec3::splat(0.6)),
+            transform: Transform::from_xyz(-400.0, 230.0, 0.01).with_scale(Vec3::splat(0.6)),
             ..default()
         })
         .id();

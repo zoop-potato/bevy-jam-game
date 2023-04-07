@@ -43,6 +43,12 @@ fn setup_cauldron(mut commands: Commands, assets: Res<AssetServer>) {
         ),
         entity: id,
     });
+    //load and spawn background
+    commands.spawn(SpriteBundle {
+        texture: assets.load("background.png"),
+        transform: Transform::default().with_scale(Vec3::splat(1.2)),
+        ..default()
+    });
 }
 
 pub struct CatchEvent(pub Option<Entity>, pub Option<Entity>);

@@ -74,7 +74,7 @@ fn spawn_potion(commands: &mut Commands, texture: &Res<PotionTexture>, effect: P
     commands
         .spawn(effect)
         .insert(SpriteBundle {
-            transform: Transform::default().with_scale(Vec3::splat(0.4)),
+            transform: Transform::from_xyz(0.0, 0.0, 0.1).with_scale(Vec3::splat(0.4)),
             texture: texture.potion.clone(),
             ..default()
         })
