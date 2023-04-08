@@ -11,15 +11,17 @@ use cauldron::CauldronPlugin;
 use ingredient::IngredientPlugin;
 use potion::PotionPlugin;
 use shelf::ShelfPlugin;
-use enemy::{EnemyPlugin, spawn_enemies};
+use enemy::*;
 //use audio::AudioPlugin;
 
 
 
 // number of enemies
 pub const NUMBER_OF_ENEMIES: usize = 4; 
-
-
+pub const ENEMY_SPEED: f32 = 100.0;
+pub const ENEMY_HEIGHT: f32 = 250.0; // as name suggests
+pub const ENEMY_WIDTH: f32 = 50.0; // as name suggests
+pub const PLAYER_WIDTH: f32 = 136.0;
 
 mod cauldron;
 mod ingredient;
@@ -58,9 +60,9 @@ fn main() {
         .add_plugin(AudioPlugin)
         .add_plugin(EnemyPlugin)
         .add_startup_system(setup_camera)
-        .add_startup_system(spawn_enemies)
         .add_system(start_background_audio.on_startup())
         .run();
+
 }
 
 fn setup_camera(mut commands: Commands) {
