@@ -2,7 +2,7 @@
 
 use bevy_kira_audio::prelude::*;
 use bevy_kira_audio::prelude::Audio; // Preventing naming conflict between kira_audio and regular bevy (both have Audio) 
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_asset_loader::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_inspector_egui::quick::{ResourceInspectorPlugin, WorldInspectorPlugin};
@@ -10,7 +10,12 @@ use cauldron::CauldronPlugin;
 use ingredient::IngredientPlugin;
 use potion::PotionPlugin;
 use shelf::ShelfPlugin;
+use enemy::{EnemyPlugin, spawn_enemies};
 //use audio::AudioPlugin;
+
+
+// number of enemies
+pub const NUMBER_OF_ENEMIES: usize = 4; 
 
 
 mod cauldron;
@@ -18,6 +23,9 @@ mod ingredient;
 mod potion;
 mod shelf;
 mod audio;
+mod enemy;
+
+
 
 
 fn main() {
@@ -33,7 +41,9 @@ fn main() {
         .add_plugin(ShelfPlugin)
         .add_plugin(PotionPlugin)
         .add_plugin(AudioPlugin)
+        .add_plugin(EnemyPlugin)
         .add_startup_system(setup_camera)
+        .add_startup_system(spawn_enemies)
         .add_system(start_background_audio.on_startup())
         .run();
 }
@@ -53,3 +63,4 @@ enum GameState {
     Loading,
     Next,
 }
+
