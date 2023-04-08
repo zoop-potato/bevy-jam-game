@@ -46,7 +46,7 @@ fn setup_cauldron(mut commands: Commands, assets: Res<AssetServer>) {
     //load and spawn background
     commands.spawn(SpriteBundle {
         texture: assets.load("background.png"),
-        transform: Transform::default().with_scale(Vec3::splat(1.2)),
+        transform: Transform::from_xyz(-140.0, 0.0, 0.0).with_scale(Vec3::splat(1.2)),
         ..default()
     });
 }
